@@ -1,28 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
+
+type ChatProps = {
+  socket: Socket;
+};
 
 type conversation = {
   message: string;
-  mine: boolean;
+  type: "others" | "mine" | "mod" | string;
+  user?: string;
 };
 
-const defaultConversation = [{ message: "Hey!", mine: false }];
+const defaultConversation = [{ message: "Hey!", type: "others" }];
 
-export default function Chat() {
+export default function Chat({ socket }: ChatProps) {
   const [message, setMessage] = useState<string>("");
   const [conversation, setConversation] =
     useState<conversation[]>(defaultConversation);
 
   const sendMessage = (msg: string) => {
-    setConversation([
-      ...conversation,
-      {
-        message: msg,
-        mine: true,
-      },
-    ]);
+    socket.emit("message", {
+      user: "Ashwin",
+      room: "1",
+      message: msg,
+    });
   };
+
+  useEffect(() => {
+    socket.on("chatroom-mod", ({ user }) => {
+      setConversation([
+        ...conversation,
+        {
+          message: `${user} has joined the room`,
+          type: "mod",
+        },
+      ]);
+    });
+
+    socket.on("message", ({ message, user }) => {
+      console.log("got a message");
+      setConversation([
+        ...conversation,
+        {
+          message,
+          user,
+          type: "others",
+        },
+      ]);
+    });
+
+    return () => {
+      socket.disconnect();
+      socket.off("chatroom-mod");
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target?.value);
@@ -44,8 +77,8 @@ export default function Chat() {
               <div
                 key={index}
                 className={`border border-neutral-700 w-fit h-fit m-2 px-3 py-1 rounded-md ${
-                  item.mine && "self-end"
-                }`}
+                  item.type === "mine" && "self-end"
+                } ${item.type === "mod" && "self-center"}`}
               >
                 {item.message}
               </div>
