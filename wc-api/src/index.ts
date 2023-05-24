@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 
 import connectDB from "./db";
 import socket from "./socket";
+import router from "./routes";
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -22,6 +23,10 @@ connectDB();
 
 // Middlewares
 app.use(cors());
+app.use("/api", router);
+app.get("/", (req, res) => {
+  res.send({ message: "hi" });
+});
 
 const PORT = process.env.PORT;
 server.listen(PORT, () =>
