@@ -12,10 +12,9 @@ export default function handleSocket(io: Server) {
     console.log("User connected:", socket.id, activeConnectionsCount);
 
     socket.on("message", ({ message, room, user }) => {
-      console.log(`${connectionId}:`, message);
       io.to(room).emit("message", {
-        type: user === socket.user ? "mine" : "others",
         message,
+        user,
       });
     });
 
@@ -23,6 +22,7 @@ export default function handleSocket(io: Server) {
       console.log("joining room:", room);
       socket.join(room);
       socket.user = user;
+
       io.to(room).emit("chatroom-mod", {
         type: "mod",
         user,
