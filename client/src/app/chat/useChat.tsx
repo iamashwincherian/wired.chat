@@ -41,7 +41,7 @@ export function useChat() {
 
   useEffect(() => {
     // Initialize socket connection
-    socketRef.current = io("http://localhost:5005");
+    socketRef.current = io("http://localhost:5003");
     const socket = socketRef.current;
 
     // Join room on connection
@@ -52,7 +52,6 @@ export function useChat() {
 
     // Listen for incoming messages
     socket.on("receive-message", (payload) => {
-      console.log("revifwefbwe", payload);
       setMessages((prev) => [
         ...prev,
         {
