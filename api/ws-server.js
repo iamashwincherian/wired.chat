@@ -54,8 +54,5 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
-const PORT = 5005;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Export the server instead
+module.exports = server;

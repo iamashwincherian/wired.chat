@@ -1,0 +1,65 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
+const bcrypt = require("bcryptjs");
+
+const User = sequelize.define(
+  "User",
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    lastSeen: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    googleId: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: true,
+    },
+    provider: {
+      type: DataTypes.ENUM("local", "google"),
+      defaultValue: "local",
+    },
+    avatar: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Hash password before saving
+User.beforeCreate(async (user) => {
+  if (user.password && user.provider === "local") {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+});
+
+// Instance method to check password
+User.prototype.validatePassword = async function (password) {
+  return bcrypt.compare(password, this.password);
+};
+
+module.exports = User;

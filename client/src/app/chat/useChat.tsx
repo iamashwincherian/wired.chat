@@ -92,17 +92,6 @@ export function useChat() {
       // Send to websocket
       socketRef.current.emit("send-message", messagePayload);
 
-      // Update local state
-      // setMessages((prev) => [
-      //   ...prev,
-      //   {
-      //     id: Date.now(),
-      //     text: messageText,
-      //     sentByMe: true,
-      //     userId,
-      //   },
-      // ]);
-
       // Reset form
       form.reset();
     }
