@@ -2,6 +2,8 @@ const User = require("./User");
 const Group = require("./Group");
 const Message = require("./Message");
 const GroupMember = require("./GroupMember");
+const Conversation = require("./Conversation");
+const ConversationMember = require("./ConversationMember");
 const sequelize = require("../config/database");
 
 // User-Message associations (for direct messages)
@@ -18,11 +20,35 @@ Message.belongsTo(Group);
 User.belongsToMany(Group, { through: GroupMember });
 Group.belongsToMany(User, { through: GroupMember });
 
-// Export models and sequelize instance
+Conversation.hasMany(Message, { foreignKey: "conversationId" });
+Message.belongsTo(Conversation, { foreignKey: "conversationId" });
+
+ConversationMember.belongsTo(Conversation, {
+  as: "conversation",
+  foreignKey: "conversationId",
+});
+
+Conversation.hasMany(ConversationMember, {
+  as: "members",
+  foreignKey: "conversationId",
+});
+
+ConversationMember.belongsTo(User, {
+  as: "user",
+  foreignKey: "userId",
+});
+
+User.belongsToMany(Conversation, {
+  through: ConversationMember,
+  foreignKey: "userId",
+});
+
 module.exports = {
   sequelize,
   User,
   Group,
   Message,
   GroupMember,
+  Conversation,
+  ConversationMember,
 };

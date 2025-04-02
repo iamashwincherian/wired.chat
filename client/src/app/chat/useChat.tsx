@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { io, Socket } from "socket.io-client";
-import { contacts } from "./contacts";
+import { logout } from "@/server/auth";
+import getUserClient from "@/lib/get-user-client";
+import { useConversation } from "./conversation-context";
 
 interface Message {
   id: number;
@@ -21,16 +23,16 @@ interface MessagePayload {
 }
 
 const formSchema = z.object({
-  message: z.string().min(1, { message: "Message is required" }),
+  message: z.string().min(1),
 });
 
 export function useChat() {
   const socketRef = useRef<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [activeChat, setActiveChat] = useState(contacts[0]);
+  const { activeConversation } = useConversation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [userId] = useState(`user-${Math.floor(1000 + Math.random() * 9000)}`);
+  const user = getUserClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,10 +46,9 @@ export function useChat() {
     socketRef.current = io("http://localhost:5003");
     const socket = socketRef.current;
 
-    // Join room on connection
+    // Join room on connection with user info
     socket.on("connect", () => {
       console.log("Connected to websocket");
-      socket.emit("join-room", activeChat.id);
     });
 
     // Listen for incoming messages
@@ -57,7 +58,7 @@ export function useChat() {
         {
           id: Date.now(),
           text: payload.message,
-          sentByMe: userId === payload.userId,
+          sentByMe: user.id === payload.userId,
           userId: payload.userId,
           roomId: payload.roomId,
         },
@@ -68,30 +69,36 @@ export function useChat() {
     return () => {
       socket?.disconnect();
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (socketRef.current) {
-      // Leave previous room and join new room when activeChat changes
-      socketRef.current.emit("join-room", activeChat.id);
+    if (socketRef.current && activeConversation) {
+      console.log("activeConversation", activeConversation);
+      socketRef.current.emit("join-room", {
+        roomId: activeConversation.id,
+        userId: user.id,
+      });
     }
-  }, [activeChat]);
+  }, [activeConversation, user?.id]);
 
   const sendMessage = (formData: z.infer<typeof formSchema>) => {
     const messageText = formData.message.trim();
 
-    if (messageText && socketRef.current) {
-      // Create message payload
+    if (messageText.toLocaleLowerCase() === "logout") {
+      logout();
+    }
+
+    if (messageText && socketRef.current && activeConversation) {
       const messagePayload: MessagePayload = {
         message: messageText,
-        roomId: activeChat.id,
-        userId,
+        roomId: activeConversation.id,
+        userId: user.id,
       };
 
-      // Send to websocket
+      console.log("user", user);
       socketRef.current.emit("send-message", messagePayload);
-
-      // Reset form
       form.reset();
     }
   };
@@ -111,14 +118,15 @@ export function useChat() {
   }, [messages]);
 
   return {
-    messages: messages.filter((message) => message.roomId === activeChat.id),
+    messages: messages.filter(
+      (message) => message.roomId === activeConversation?.id
+    ),
     messagesEndRef,
     showScrollButton,
     handleScroll,
     scrollToBottom,
     sendMessage,
     form,
-    activeChat,
-    setActiveChat,
+    activeConversation,
   };
 }

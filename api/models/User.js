@@ -10,6 +10,11 @@ const User = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: null, // This will be removed in the migration
+    },
     username: {
       type: DataTypes.STRING,
       allowNull: false,

@@ -4,12 +4,17 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const session = require("express-session");
 const passport = require("./config/passport");
-const authRoutes = require("./routes/auth");
+const routes = require("./routes");
 
 const app = express();
 
 // Middleware
-app.use(cors()); // Enable CORS for all routes
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+); // Enable CORS for localhost:3000
 app.use(helmet()); // Add security headers
 app.use(morgan("dev")); // HTTP request logger
 app.use(express.json()); // Parse JSON bodies
@@ -32,26 +37,23 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
-app.use("/auth", authRoutes);
+app.use("/api/", routes);
 
-// Basic error handling middleware
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
     status: "error",
-    message: "Something went wrong!",
+    message: err.message || "Something went wrong!",
   });
 });
 
-// Basic health check route
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// API routes
-app.get("/api", (req, res) => {
-  res.json({ message: "Welcome to the API" });
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: "404! Page not found!",
+    error: "NOT_FOUND",
+  });
 });
 
 module.exports = app;

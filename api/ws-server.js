@@ -7,7 +7,6 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: ["http://localhost:3000"], // Add your frontend URL(s)
-    methods: ["GET", "POST"],
     credentials: true,
   },
 });
@@ -20,18 +19,19 @@ io.on("connection", (socket) => {
   console.log("A user connected");
 
   // Handle joining a room
-  socket.on("join-room", (roomId) => {
+  socket.on("join-room", ({ roomId, userId }) => {
     socket.join(roomId);
     if (!rooms.has(roomId)) {
       rooms.set(roomId, new Set());
     }
     rooms.get(roomId).add(socket.id);
-    console.log(`User ${socket.id} joined room ${roomId}`);
+    console.log(`User ${userId} joined room ${roomId}`);
   });
 
   // Handle messages in a room
   socket.on("send-message", (data) => {
     const { roomId, userId, message } = data;
+    console.log("send-message", roomId, userId, message);
     io.to(roomId).emit("receive-message", {
       message,
       userId,
