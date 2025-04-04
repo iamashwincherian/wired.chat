@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useConversation } from "./conversation-context";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Conversations() {
+export default function RecentConversations() {
   const {
     conversations = [],
     activeConversation,
@@ -62,6 +62,11 @@ export default function Conversations() {
           )}
         </div>
       ))}
+      {!conversations.length && (
+        <div className="text-center py-4 text-stone-300">
+          No recent conversations
+        </div>
+      )}
     </div>
   );
 }

@@ -7,19 +7,13 @@ import { io, Socket } from "socket.io-client";
 import { logout } from "@/server/auth";
 import getUserClient from "@/lib/get-user-client";
 import { useConversation } from "./conversation-context";
+import { useMessages } from "./messages-context";
 
 interface Message {
-  id: number;
-  text: string;
-  userId: string;
-  roomId: string;
-  sentByMe: boolean;
-}
-
-interface MessagePayload {
-  message: string;
-  roomId: string;
-  userId: string;
+  id: string;
+  content: string;
+  senderId: string;
+  receiverId?: string;
 }
 
 const formSchema = z.object({
@@ -28,10 +22,9 @@ const formSchema = z.object({
 
 export function useChat() {
   const socketRef = useRef<Socket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const { activeConversation } = useConversation();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { setMessages, messages } = useMessages();
   const user = getUserClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,15 +45,13 @@ export function useChat() {
     });
 
     // Listen for incoming messages
-    socket.on("receive-message", (payload) => {
+    socket.on("receive-message", (payload: Message) => {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now(),
-          text: payload.message,
-          sentByMe: user.id === payload.userId,
-          userId: payload.userId,
-          roomId: payload.roomId,
+          id: payload.id,
+          content: payload.content,
+          senderId: payload.senderId,
         },
       ]);
     });
@@ -69,13 +60,10 @@ export function useChat() {
     return () => {
       socket?.disconnect();
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (socketRef.current && activeConversation) {
-      console.log("activeConversation", activeConversation);
       socketRef.current.emit("join-room", {
         roomId: activeConversation.id,
         userId: user.id,
@@ -91,20 +79,14 @@ export function useChat() {
     }
 
     if (messageText && socketRef.current && activeConversation) {
-      const messagePayload: MessagePayload = {
+      socketRef.current.emit("send-message", {
         message: messageText,
         roomId: activeConversation.id,
         userId: user.id,
-      };
-
-      console.log("user", user);
-      socketRef.current.emit("send-message", messagePayload);
+        receiverId: activeConversation.userId,
+      });
       form.reset();
     }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
@@ -113,18 +95,12 @@ export function useChat() {
     setShowScrollButton(isNotAtBottom);
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   return {
     messages: messages.filter(
-      (message) => message.roomId === activeConversation?.id
+      (message) => message.senderId === activeConversation?.userId
     ),
-    messagesEndRef,
     showScrollButton,
     handleScroll,
-    scrollToBottom,
     sendMessage,
     form,
     activeConversation,

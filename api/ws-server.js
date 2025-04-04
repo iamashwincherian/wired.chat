@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const MessageService = require("./services/message");
 
 const app = express();
 const server = http.createServer(app);
@@ -29,15 +30,16 @@ io.on("connection", (socket) => {
   });
 
   // Handle messages in a room
-  socket.on("send-message", (data) => {
-    const { roomId, userId, message } = data;
-    console.log("send-message", roomId, userId, message);
-    io.to(roomId).emit("receive-message", {
+  socket.on("send-message", async (data) => {
+    const { roomId, userId, message, receiverId = null } = data;
+    const newMessage = await MessageService.createMessage({
       message,
-      userId,
       roomId,
-      timestamp: new Date(),
+      userId,
+      receiverId,
     });
+
+    io.to(roomId).emit("receive-message", newMessage);
   });
 
   // Handle disconnection

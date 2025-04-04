@@ -10,10 +10,12 @@ export interface Conversation {
   type?: string;
   status?: string;
   displayName: string;
+  userId?: string;
 }
 
 interface ConversationContextType {
   conversations: Conversation[];
+  setConversations: (conversation: Conversation[]) => void;
   activeConversation: Conversation | null;
   setActiveConversation: (conversation: Conversation) => void;
   isLoading: boolean;
@@ -46,22 +48,18 @@ export function ConversationProvider({
 
       if (response.success && response.data) {
         setConversations(response.data);
-        // Set first conversation as active if exists and no active conversation
-        if (response.data.length > 0 && !activeConversation) {
-          setActiveConversation(response.data[0]);
-        }
       }
       setIsLoading(false);
     }
 
     fetchConversations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <ConversationContext.Provider
       value={{
         conversations,
+        setConversations,
         activeConversation,
         setActiveConversation,
         isLoading,

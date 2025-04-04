@@ -1,37 +1,33 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const ConversationMember = sequelize.define(
-  "ConversationMember",
+const ContactRequest = sequelize.define(
+  "ContactRequest",
   {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: {
+    senderId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "User",
+        model: "Users",
         key: "id",
       },
     },
-    conversationId: {
+    receiverId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "Conversation",
+        model: "Users",
         key: "id",
       },
     },
-    role: {
-      type: DataTypes.ENUM("admin", "member"),
-      defaultValue: "member",
-    },
-    lastReadAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+    status: {
+      type: DataTypes.ENUM("pending", "accepted", "declined"),
+      defaultValue: "pending",
     },
   },
   {
@@ -39,4 +35,4 @@ const ConversationMember = sequelize.define(
   }
 );
 
-module.exports = ConversationMember;
+module.exports = ContactRequest;

@@ -25,11 +25,31 @@ const Message = sequelize.define(
     receiverId: {
       type: DataTypes.UUID,
       allowNull: true,
+      references: {
+        model: "Users",
+        key: "id",
+      },
     },
     // null if it's a direct message
     groupId: {
       type: DataTypes.UUID,
       allowNull: true,
+    },
+    senderId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: "Users",
+        key: "id",
+      },
+    },
+    conversationId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: "Conversations",
+        key: "id",
+      },
     },
   },
   {

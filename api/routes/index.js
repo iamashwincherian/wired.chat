@@ -3,17 +3,17 @@ const router = express.Router();
 const authRoutes = require("./auth");
 const userRoutes = require("./user");
 const conversationRoutes = require("./conversation");
+const contactRoutes = require("./contact");
+
 // Health check route
 router.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// Auth routes
 router.use("/auth", authRoutes);
-
-// User routes - protected by authentication
 router.use("/users", userRoutes);
 router.use("/conversations", conversationRoutes);
+router.use("/contacts", contactRoutes);
 
 // API version prefix
 router.get("/", (req, res) => {

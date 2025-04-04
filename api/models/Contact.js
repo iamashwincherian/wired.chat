@@ -1,37 +1,29 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const ConversationMember = sequelize.define(
-  "ConversationMember",
+const Contact = sequelize.define(
+  "Contact",
   {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: {
+    user1Id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "User",
+        model: "Users",
         key: "id",
       },
     },
-    conversationId: {
+    user2Id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: "Conversation",
+        model: "Users",
         key: "id",
       },
-    },
-    role: {
-      type: DataTypes.ENUM("admin", "member"),
-      defaultValue: "member",
-    },
-    lastReadAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
     },
   },
   {
@@ -39,4 +31,4 @@ const ConversationMember = sequelize.define(
   }
 );
 
-module.exports = ConversationMember;
+module.exports = Contact;

@@ -1,23 +1,37 @@
 const express = require("express");
-const { User } = require("../models");
+const { User, ContactRequest } = require("../models");
 const { Op } = require("sequelize");
 const authenticate = require("../middleware/auth");
 
 const router = express.Router();
 
-// Get all users except the current user
-router.get("/", authenticate, async (req, res) => {
-  const users = await User.findAll({
-    where: {
-      id: {
-        [Op.ne]: req.user.id,
-      },
+router.get("/search", authenticate, async (req, res) => {
+  const { email } = req.query;
+
+  const user = await User.findAll({
+    where: { email },
+    include: { model: ContactRequest, as: "receivedRequests" },
+    attributes: {
+      exclude: ["password", "googleId", "createdAt", "updatedAt"],
     },
-    attributes: ["id", "name", "email", "username", "avatar", "lastSeen"],
-    order: [["username", "ASC"]],
   });
 
-  res.json(users);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json(user);
+});
+
+router.get("/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  const user = await User.findOne({
+    where: { id },
+    attributes: ["id", "name", "email"],
+  });
+
+  res.json(user);
 });
 
 module.exports = router;
