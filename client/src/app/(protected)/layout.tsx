@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Navbar from "@/components/navbar/navbar";
 import "../globals.css";
 import { Card } from "@/components/ui/card";
-import { MessagesProvider } from "./chat/messages-context";
-import { ConversationProvider } from "./chat/conversation-context";
+import { MessagesProvider } from "./chats/messages-context";
+import { ConversationProvider } from "./chats/conversation-context";
 
 export const metadata: Metadata = {
   title: "Wired.Chat",

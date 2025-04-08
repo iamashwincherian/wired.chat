@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiClient } from "@/lib/api-client";
+import { toast } from "sonner";
+import { login } from "@/app/actions";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -50,28 +52,31 @@ export function RegisterForm({
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      interface AuthResponse {
-        token: string;
-        user: {
-          id: string;
-          email: string;
-          name: string;
-        };
+    interface AuthResponse {
+      token: string;
+      user: {
+        id: string;
+        email: string;
+        name: string;
+      };
+    }
+
+    const response = await ApiClient<AuthResponse>(
+      "POST",
+      "/auth/register",
+      values
+    );
+
+    if (response.error) {
+      if (response.error?.email === "EXISTS") {
+        toast.error("Account already exists!");
+        return;
       }
+    }
 
-      const response = await ApiClient<AuthResponse>(
-        "POST",
-        "/auth/register",
-        values
-      );
-
-      localStorage.setItem("token", response.token);
-      localStorage.setItem("user", JSON.stringify(response.user));
-
-      router.push("/chat");
-    } catch (error) {
-      console.error("Registration failed:", error);
+    if (response.success && response.data) {
+      await login(response.data.user, response.data.token);
+      router.push("/");
     }
   };
 
@@ -179,10 +184,10 @@ export function RegisterForm({
           </div>
         </CardContent>
       </Card>
-      {/* <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
+      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
         and <a href="#">Privacy Policy</a>.
-      </div> */}
+      </div>
     </div>
   );
 }

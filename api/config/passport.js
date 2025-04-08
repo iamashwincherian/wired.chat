@@ -1,6 +1,7 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy; // Added GitHub Strategy
 const { User } = require("../models");
 
 // Serialize user for the session
@@ -55,23 +56,58 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // Find or create user
         const [user] = await User.findOrCreate({
           where: { googleId: profile.id },
           defaults: {
             email: profile.emails[0].value,
-            username: profile.displayName,
+            username: profile.emails[0].value,
             provider: "google",
             avatar: profile.photos[0].value,
+            name: profile.displayName,
           },
         });
 
         done(null, user);
       } catch (error) {
+        done(error);
+      }
+    }
+  )
+);
+
+// GitHub Strategy
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.GITHUB_CALLBACK_URL,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      const email = profile.emails[0]?.value;
+      if (!email) {
+        return done(new Error("No email found"), false);
+      }
+
+      try {
+        const [user] = await User.findOrCreate({
+          where: { email },
+          defaults: {
+            email,
+            username: profile.username,
+            provider: "github",
+            avatar: profile.photos[0]?.value,
+            name: profile.displayName,
+          },
+        });
+
+        done(null, user);
+      } catch (error) {
+        console.log("custom error", error);
         done(error);
       }
     }

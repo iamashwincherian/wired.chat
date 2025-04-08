@@ -4,7 +4,7 @@ const authenticate = require("../../middleware/auth");
 
 const router = express.Router();
 
-router.post("requests/accept/:requestId", authenticate, async (req, res) => {
+router.post("/requests/:requestId/accept/", authenticate, async (req, res) => {
   const { requestId } = req.params;
   const userId = req.user.id;
 

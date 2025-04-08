@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getUserAndToken } from "./server/auth";
+import { getUserAndToken } from "./app/actions";
 
 export async function middleware(request: NextRequest) {
   // Check if user and token cookies exist

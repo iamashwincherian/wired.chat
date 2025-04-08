@@ -5,10 +5,11 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "migrate": "sequelize-cli db:migrate",
-    "migrate:undo": "sequelize-cli db:migrate:undo",
-    "migrate:undo:all": "sequelize-cli db:migrate:undo:all",
+    "migrate:up": "sequelize-cli db:migrate",
+    "migrate:down": "sequelize-cli db:migrate:undo",
+    "migrate:down:all": "sequelize-cli db:migrate:undo:all",
     "migration:create": "sequelize-cli migration:create --name",
+    "db:clean": "npm run migrate:down:all && npm run migrate:up",
     "seed": "sequelize-cli db:seed:all",
     "seed:undo:all": "sequelize-cli db:seed:undo:all"
   },
@@ -17,6 +18,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "connect-session-sequelize": "^7.1.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -25,6 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "passport": "^0.7.0",
+    "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",

@@ -3,7 +3,7 @@
 import { cookies as getCookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;

@@ -4,6 +4,10 @@ const { User } = require("../models");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 
+const generateToken = (user) => {
+  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET);
+};
+
 // Local authentication routes
 router.post("/register", async (req, res, next) => {
   try {
@@ -14,7 +18,9 @@ router.post("/register", async (req, res, next) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res
+        .status(409)
+        .json({ message: "Email already registered", email: "EXISTS" });
     }
 
     const user = await User.create({
@@ -48,7 +54,6 @@ router.post("/login", async (req, res, next) => {
     req.logIn(user, async (err) => {
       if (err) return next(err);
 
-      // Generate token
       const token = jwt.sign(
         { id: user.id, email: user.email },
         process.env.JWT_SECRET
@@ -61,6 +66,7 @@ router.post("/login", async (req, res, next) => {
           email: user.email,
           name: user.name,
           username: user.username,
+          createdAt: user.createdAt,
         },
         token,
       });
@@ -77,9 +83,40 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-  })
+    failWithError: true,
+    passReqToCallback: true,
+  }),
+  (req, res) => {
+    const token = generateToken(req.user);
+    res.json({
+      message: "Google authentication successful",
+      user: req.user,
+      token,
+    });
+  }
+);
+
+// GitHub authentication routes
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+router.get(
+  "/github/callback",
+  passport.authenticate("github", {
+    failWithError: true,
+    passReqToCallback: true,
+  }),
+  (req, res) => {
+    console.log("post auth with github");
+    const token = generateToken(req.user);
+    res.json({
+      message: "GitHub authentication successful",
+      user: req.user,
+      token,
+    });
+  }
 );
 
 router.post("/logout", (req, res) => {

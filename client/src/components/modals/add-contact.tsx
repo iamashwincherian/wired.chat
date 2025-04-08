@@ -102,18 +102,19 @@ const SearchUserItem = ({ user }: { user: User }) => {
 export default function AddContactModal({ trigger }: AddContactModalProps) {
   const [searchResults, setSearchResults] = useState<User[]>([]);
 
-  const onOpenChange = (open: boolean) => {
-    if (!open) {
-      setSearchResults([]);
-    }
-  };
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
     },
   });
+
+  const onOpenChange = (open: boolean) => {
+    if (!open) {
+      setSearchResults([]);
+      form.reset();
+    }
+  };
 
   const onSearch = async ({ email }: z.infer<typeof formSchema>) => {
     const response = await ApiClient(

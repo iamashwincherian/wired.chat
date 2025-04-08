@@ -2,7 +2,8 @@
 
 import Cookies from "js-cookie";
 
-const BASE_URL = "http://localhost:5005/api";
+export const BASE_URL =
+  process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const ApiClient = async <T>(
   method: "GET" | "POST" | "PUT" | "DELETE",

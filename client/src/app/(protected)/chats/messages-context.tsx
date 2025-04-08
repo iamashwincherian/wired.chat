@@ -1,8 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  SetStateAction,
+  Dispatch,
+  useContext,
+  useState,
+} from "react";
 import { ApiClient } from "@/lib/api-client";
-import { useConversation } from "./conversation-context";
 
 export interface Message {
   id: string;
@@ -13,8 +18,9 @@ export interface Message {
 
 interface MessagesContextType {
   messages: Message[];
-  setMessages: (messages: Message[]) => void;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
   isLoading: boolean;
+  fetchMessages: (conversationId: string) => Promise<void>;
 }
 
 const MessagesContext = createContext<MessagesContextType | undefined>(
@@ -24,7 +30,6 @@ const MessagesContext = createContext<MessagesContextType | undefined>(
 export function MessagesProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { activeConversation } = useConversation();
 
   const fetchMessages = async (conversationId: string) => {
     setIsLoading(true);
@@ -41,14 +46,16 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    if (activeConversation) {
-      fetchMessages(activeConversation.id);
-    }
-  }, [activeConversation?.id]);
+  // useEffect(() => {
+  //   if (activeConversation?.id) {
+  //     fetchMessages(activeConversation.id);
+  //   }
+  // }, [activeConversation?.id]);
 
   return (
-    <MessagesContext.Provider value={{ messages, setMessages, isLoading }}>
+    <MessagesContext.Provider
+      value={{ messages, setMessages, fetchMessages, isLoading }}
+    >
       {children}
     </MessagesContext.Provider>
   );

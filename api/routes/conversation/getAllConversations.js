@@ -36,6 +36,7 @@ router.get("/", authenticate, async (req, res) => {
           fn("COALESCE", col("members.user.name"), col("Conversation.name")),
           "displayName",
         ],
+        [fn("COALESCE", col("members.user.avatar")), "displayImage"],
       ],
     },
   });

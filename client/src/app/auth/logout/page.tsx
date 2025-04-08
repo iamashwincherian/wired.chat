@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { logout } from "@/server/auth";
+import { logout } from "@/app/actions";
 import { toast } from "sonner";
 
 export default function Logout() {

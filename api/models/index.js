@@ -60,11 +60,15 @@ User.hasMany(ContactRequest, {
   foreignKey: "receiverId",
   as: "receivedRequests",
 });
-User.belongsToMany(User, {
-  through: Contact,
-  as: "Contacts",
-  foreignKey: "userId",
-  otherKey: "contactId",
+
+Contact.belongsTo(User, {
+  foreignKey: "user1Id",
+  as: "user1",
+});
+
+Contact.belongsTo(User, {
+  foreignKey: "user2Id",
+  as: "user2",
 });
 
 // ContactRequest associations

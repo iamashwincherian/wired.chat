@@ -3,14 +3,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useConversation } from "./conversation-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { Conversation } from "@/services/conversation";
 
 export default function RecentConversations() {
-  const {
-    conversations = [],
-    activeConversation,
-    setActiveConversation,
-    isLoading,
-  } = useConversation();
+  const { conversations = [], isLoading } = useConversation();
+  const router = useRouter();
+
+  const openConversation = (conversation: Conversation) => {
+    router.push(`/chats/${conversation.id}`);
+  };
 
   if (isLoading) {
     return (
@@ -33,14 +35,12 @@ export default function RecentConversations() {
       {conversations?.map((conversation) => (
         <div
           key={conversation.id}
-          onClick={() => setActiveConversation(conversation)}
-          className={`flex items-center space-x-3 p-3 cursor-pointer hover:bg-muted transition-colors ${
-            activeConversation?.id === conversation.id ? "bg-muted" : ""
-          }`}
+          className={`flex items-center space-x-3 p-3 cursor-pointer hover:bg-muted transition-colors`}
+          onClick={() => openConversation(conversation)}
         >
           <Avatar>
             <AvatarImage
-              src={conversation.avatar}
+              src={conversation.displayImage}
               alt={conversation.displayName}
             />
             <AvatarFallback>

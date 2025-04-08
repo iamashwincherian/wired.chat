@@ -31,7 +31,7 @@ const User = sequelize.define(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     lastSeen: {
       type: DataTypes.DATE,
@@ -42,8 +42,13 @@ const User = sequelize.define(
       unique: true,
       allowNull: true,
     },
+    githubId: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: true,
+    },
     provider: {
-      type: DataTypes.ENUM("local", "google"),
+      type: DataTypes.ENUM("local", "google", "github"),
       defaultValue: "local",
     },
     avatar: {

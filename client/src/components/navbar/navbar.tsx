@@ -26,34 +26,38 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "messages", icon: MessageSquare, label: "Messages", href: "/chat" },
+  { id: "messages", icon: MessageSquare, label: "Messages", href: "/chats" },
   { id: "contacts", icon: Users, label: "Contacts", href: "/contacts" },
-  { id: "search", icon: Search, label: "Search", href: "/search" },
-  {
-    id: "notifications",
-    icon: Bell,
-    label: "Notifications",
-    href: "/notifications",
-  },
+  // { id: "search", icon: Search, label: "Search", href: "/search" },
+  // {
+  //   id: "notifications",
+  //   icon: Bell,
+  //   label: "Notifications",
+  //   href: "/notifications",
+  // },
   { id: "profile", icon: User, label: "Profile", href: "/profile" },
-  { id: "settings", icon: Settings, label: "Settings", href: "/settings" },
+  // { id: "settings", icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export default function Navbar() {
   const router = useRouter();
   const path = usePathname();
-  const [activeNav, setActiveNav] = useState<NavItem>(
+  const navItemFromPath =
     navItems.find((item) => new RegExp(`^${path}$`).test(item.href)) ||
-      navItems[0]
-  );
+    navItems[0];
+  const [activeNav, setActiveNav] = useState<NavItem>(navItemFromPath);
   const [prevNav, setPrevNav] = useState<NavItem>(activeNav);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setPrevNav(activeNav);
-    }, 300); // Match this with the animation duration
+    }, 300);
     return () => clearTimeout(timer);
   }, [activeNav]);
+
+  useEffect(() => {
+    setActiveNav(navItemFromPath);
+  }, [navItemFromPath]);
 
   const switchTab = (navItem: NavItem) => {
     setActiveNav(navItem);

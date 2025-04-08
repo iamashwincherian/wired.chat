@@ -1,17 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { ApiClient } from "@/lib/api-client";
-
-export interface Conversation {
-  id: string;
-  name: string;
-  avatar: string;
-  type?: string;
-  status?: string;
-  displayName: string;
-  userId?: string;
-}
+import ConversationService, { Conversation } from "@/services/conversation";
 
 interface ConversationContextType {
   conversations: Conversation[];
@@ -37,17 +27,10 @@ export function ConversationProvider({
 
   useEffect(() => {
     async function fetchConversations() {
-      const response = await ApiClient<Conversation[]>(
-        "GET",
-        "/conversations",
-        null,
-        {
-          auth: true,
-        }
-      );
-
-      if (response.success && response.data) {
-        setConversations(response.data);
+      const response = await ConversationService.getAll();
+      setIsLoading(true);
+      if (response) {
+        setConversations(response);
       }
       setIsLoading(false);
     }

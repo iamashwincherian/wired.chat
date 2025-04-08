@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const session = require("express-session");
 const passport = require("./config/passport");
 const routes = require("./routes");
+const sessionStore = require("./config/session-store");
 
 const app = express();
 
@@ -23,13 +24,19 @@ app.use(express.urlencoded({ extended: true }));
 // Session configuration
 app.use(
   session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true,
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
     },
+    // cookie: {
+    //   secure: process.env.NODE_ENV === "production",
+    //   maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    // },
   })
 );
 
@@ -55,5 +62,7 @@ app.use((req, res, next) => {
     error: "NOT_FOUND",
   });
 });
+
+sessionStore.sync();
 
 module.exports = app;

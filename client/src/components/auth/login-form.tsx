@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ApiClient } from "@/lib/api-client";
+import { ApiClient, BASE_URL } from "@/lib/api-client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { login } from "@/server/auth";
+import { login } from "@/app/actions";
 import { toast } from "sonner";
 
 const formSchema = z.object({
@@ -77,19 +77,29 @@ export function LoginForm({
     router.push(redirectPath || "/");
   };
 
+  const handleGoogleLogin = async () => {
+    window.open(`${BASE_URL}/auth/google`, "_self");
+  };
+
+  const handleGithubLogin = async () => {
+    window.open(`${BASE_URL}/auth/github`, "_self");
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Login to get started</CardTitle>
-          <CardDescription>
-            Login with your Google or Github account
-          </CardDescription>
+          <CardDescription>Use your Google or Github account</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleGoogleLogin}
+              >
                 <svg
                   className="mr-2 h-4 w-4"
                   viewBox="0 0 24 24"
@@ -99,7 +109,11 @@ export function LoginForm({
                 </svg>
                 Google
               </Button>
-              <Button variant="outline" className="flex-1">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleGithubLogin}
+              >
                 <svg
                   className="mr-2 h-4 w-4"
                   viewBox="0 0 24 24"
@@ -177,10 +191,10 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-      {/* <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
+      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
         By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
         and <a href="#">Privacy Policy</a>.
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -1,39 +1,42 @@
 const express = require("express");
-const { Conversation, ConversationMember } = require("../../models");
+const { Conversation, User } = require("../../models");
 const authenticate = require("../../middleware/auth");
-const { Op } = require("sequelize");
+const { Op, literal } = require("sequelize");
 
 const router = express.Router();
 
-router.get("/:userId", authenticate, async (req, res) => {
+router.get("/:conversationId", authenticate, async (req, res) => {
+  const { conversationId } = req.params;
   const {
     user: { id: userId },
   } = req;
-  const { userId: otherUserId } = req.params;
 
   const conversation = await Conversation.findOne({
     where: {
-      type: "direct",
+      id: conversationId,
     },
     include: [
       {
-        model: ConversationMember,
-        as: "members",
+        model: User,
+        attributes: ["id", "name", "email", "avatar"],
         where: {
-          userId: {
-            [Op.in]: [userId, otherUserId],
+          id: {
+            [Op.ne]: userId,
           },
         },
-        attributes: ["userId"],
-        required: true,
+        required: false,
       },
     ],
-    attributes: ["id", "type"],
   });
 
   if (!conversation) {
     return res.status(404).json({ message: "Conversation not found" });
   }
+
+  conversation.dataValues.displayName =
+    conversation.dataValues.Users?.[0]?.name;
+  conversation.dataValues.displayImage =
+    conversation.dataValues.Users?.[0]?.avatar;
 
   res.json(conversation);
 });

@@ -1,29 +1,22 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { io, Socket } from "socket.io-client";
-import { logout } from "@/server/auth";
+import { logout } from "@/app/actions";
 import getUserClient from "@/lib/get-user-client";
-import { useConversation } from "./conversation-context";
-import { useMessages } from "./messages-context";
-
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  receiverId?: string;
-}
+import { useMessages, Message } from "../messages-context";
+import { Conversation } from "@/services/conversation";
 
 const formSchema = z.object({
   message: z.string().min(1),
 });
 
-export function useChat() {
+export function useChat(conversation: Conversation | null) {
   const socketRef = useRef<Socket | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const { activeConversation } = useConversation();
   const { setMessages, messages } = useMessages();
   const user = getUserClient();
 
@@ -52,7 +45,7 @@ export function useChat() {
           id: payload.id,
           content: payload.content,
           senderId: payload.senderId,
-        },
+        } as Message,
       ]);
     });
 
@@ -60,16 +53,16 @@ export function useChat() {
     return () => {
       socket?.disconnect();
     };
-  }, []);
+  }, [setMessages]);
 
   useEffect(() => {
-    if (socketRef.current && activeConversation) {
+    if (socketRef.current && conversation) {
       socketRef.current.emit("join-room", {
-        roomId: activeConversation.id,
+        roomId: conversation.id,
         userId: user.id,
       });
     }
-  }, [activeConversation, user?.id]);
+  }, [conversation, user?.id]);
 
   const sendMessage = (formData: z.infer<typeof formSchema>) => {
     const messageText = formData.message.trim();
@@ -78,12 +71,12 @@ export function useChat() {
       logout();
     }
 
-    if (messageText && socketRef.current && activeConversation) {
+    if (messageText && socketRef.current && conversation) {
       socketRef.current.emit("send-message", {
         message: messageText,
-        roomId: activeConversation.id,
+        roomId: conversation.id,
         userId: user.id,
-        receiverId: activeConversation.userId,
+        receiverId: conversation.userId,
       });
       form.reset();
     }
@@ -97,12 +90,12 @@ export function useChat() {
 
   return {
     messages: messages.filter(
-      (message) => message.senderId === activeConversation?.userId
+      (message) => message.senderId === conversation?.userId
     ),
     showScrollButton,
     handleScroll,
     sendMessage,
     form,
-    activeConversation,
+    conversation,
   };
 }
