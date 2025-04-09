@@ -2,33 +2,28 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("Users", {
+    await queryInterface.createTable("UserVerifications", {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      name: {
+      userId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: "Users",
+          key: "id",
+        },
+      },
+      code: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      username: {
-        type: Sequelize.STRING,
+      status: {
+        type: Sequelize.ENUM("pending", "verified", "expired"),
+        defaultValue: "pending",
         allowNull: false,
-        unique: true,
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      password: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      lastSeen: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
       },
       createdAt: {
         allowNull: false,
@@ -38,15 +33,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
-      verified: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-        allowNull: false,
-      },
     });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("Users");
+    await queryInterface.dropTable("UserVerifications");
   },
 };

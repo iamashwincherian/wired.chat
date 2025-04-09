@@ -65,9 +65,10 @@ passport.use(
           defaults: {
             email: profile.emails[0].value,
             username: profile.emails[0].value,
-            provider: "google",
             avatar: profile.photos[0].value,
             name: profile.displayName,
+            provider: "google",
+            verified: true,
           },
         });
 
@@ -99,9 +100,10 @@ passport.use(
           defaults: {
             email,
             username: profile.username,
-            provider: "github",
             avatar: profile.photos[0]?.value,
             name: profile.displayName,
+            provider: "github",
+            verified: true,
           },
         });
 

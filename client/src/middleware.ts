@@ -19,5 +19,5 @@ export async function middleware(request: NextRequest) {
 
 // Configure which paths this middleware will run on
 export const config = {
-  matcher: ["/chat"],
+  matcher: ["/chats", "/chat/:path*"],
 };

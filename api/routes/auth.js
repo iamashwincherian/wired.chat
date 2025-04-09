@@ -10,49 +10,77 @@ const generateToken = (user) => {
 
 // Local authentication routes
 router.post("/register", async (req, res, next) => {
-  try {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({
-      where: { email },
-    });
+  const existingUser = await User.findOne({
+    where: { email },
+  });
 
-    if (existingUser) {
-      return res
-        .status(409)
-        .json({ message: "Email already registered", email: "EXISTS" });
+  if (existingUser) {
+    return res
+      .status(409)
+      .json({ message: "Email already registered", email: "EXISTS" });
+  }
+
+  const user = await User.create({
+    name,
+    email,
+    username: email,
+    password,
+    provider: "local",
+  });
+
+  req.logIn(user, async (err) => {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(404).json({ message: info.message });
     }
 
-    const user = await User.create({
-      name,
-      email,
-      username: email,
-      password,
-      provider: "local",
-    });
+    if (!user.verified) {
+      return res.status(401).json({
+        message: "Please verify your email to login",
+        verified: "NOT_ALLOWED",
+        userId: user.id,
+      });
+    }
 
-    res.status(201).json({
-      message: "User registered successfully",
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET
+    );
+
+    return res.json({
+      message: "Registered successfully",
       user: {
         id: user.id,
-        name: user.name,
         email: user.email,
+        name: user.name,
         username: user.username,
+        createdAt: user.createdAt,
+        verified: user.verified,
       },
+      token,
     });
-  } catch (error) {
-    next(error);
-  }
+  });
 });
+
 router.post("/login", async (req, res, next) => {
   passport.authenticate("local", async (err, user, info) => {
     if (err) return next(err);
     if (!user) {
-      return res.status(401).json({ message: info.message });
+      return res.status(404).json({ message: info.message });
     }
 
     req.logIn(user, async (err) => {
       if (err) return next(err);
+
+      if (!user.verified) {
+        return res.status(401).json({
+          message: "Please verify your email to login",
+          verified: "NOT_ALLOWED",
+          userId: user.id,
+        });
+      }
 
       const token = jwt.sign(
         { id: user.id, email: user.email },
@@ -67,6 +95,7 @@ router.post("/login", async (req, res, next) => {
           name: user.name,
           username: user.username,
           createdAt: user.createdAt,
+          verified: user.verified,
         },
         token,
       });
@@ -109,7 +138,6 @@ router.get(
     passReqToCallback: true,
   }),
   (req, res) => {
-    console.log("post auth with github");
     const token = generateToken(req.user);
     res.json({
       message: "GitHub authentication successful",

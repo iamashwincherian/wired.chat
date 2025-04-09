@@ -6,6 +6,7 @@ const Conversation = require("./Conversation");
 const ConversationMember = require("./ConversationMember");
 const ContactRequest = require("./ContactRequest");
 const Contact = require("./Contact");
+const UserVerification = require("./UserVerification");
 const sequelize = require("../config/database");
 
 // User-Message associations (for direct messages)
@@ -71,9 +72,11 @@ Contact.belongsTo(User, {
   as: "user2",
 });
 
-// ContactRequest associations
 ContactRequest.belongsTo(User, { as: "sender", foreignKey: "senderId" });
 ContactRequest.belongsTo(User, { as: "receiver", foreignKey: "receiverId" });
+
+User.hasOne(UserVerification, { foreignKey: "userId", as: "verification" });
+UserVerification.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 module.exports = {
   sequelize,
@@ -85,4 +88,5 @@ module.exports = {
   ConversationMember,
   ContactRequest,
   Contact,
+  UserVerification,
 };
