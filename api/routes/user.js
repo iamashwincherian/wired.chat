@@ -9,7 +9,11 @@ router.get("/search", authenticate, async (req, res) => {
   const { email } = req.query;
 
   const user = await User.findAll({
-    where: { email },
+    where: {
+      email: {
+        [Op.and]: [{ [Op.eq]: email }, { [Op.ne]: req.user.email }],
+      },
+    },
     include: { model: ContactRequest, as: "receivedRequests" },
     attributes: {
       exclude: ["password", "googleId", "createdAt", "updatedAt"],

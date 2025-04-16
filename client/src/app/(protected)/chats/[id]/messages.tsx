@@ -43,12 +43,12 @@ export default function Messages({
           <div
             key={message.id}
             className={`flex ${
-              message.senderId === user.id ? "justify-end" : "justify-start"
+              message.senderId === user?.id ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`text-sm rounded-lg px-3 py-1.5 max-w-[85%] ${
-                message.senderId === user.id
+                message.senderId === user?.id
                   ? "bg-muted"
                   : "bg-primary text-primary-foreground"
               }`}

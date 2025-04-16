@@ -8,6 +8,7 @@ interface ConversationContextType {
   setConversations: (conversation: Conversation[]) => void;
   activeConversation: Conversation | null;
   setActiveConversation: (conversation: Conversation) => void;
+  fetchConversations: () => void;
   isLoading: boolean;
 }
 
@@ -25,16 +26,16 @@ export function ConversationProvider({
     useState<Conversation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchConversations() {
-      const response = await ConversationService.getAll();
-      setIsLoading(true);
-      if (response) {
-        setConversations(response);
-      }
-      setIsLoading(false);
+  async function fetchConversations() {
+    const response = await ConversationService.getAll();
+    setIsLoading(true);
+    if (response) {
+      setConversations(response);
     }
+    setIsLoading(false);
+  }
 
+  useEffect(() => {
     fetchConversations();
   }, []);
 
@@ -45,6 +46,7 @@ export function ConversationProvider({
         setConversations,
         activeConversation,
         setActiveConversation,
+        fetchConversations,
         isLoading,
       }}
     >

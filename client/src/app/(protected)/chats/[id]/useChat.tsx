@@ -56,7 +56,7 @@ export function useChat(conversation: Conversation | null) {
   }, [setMessages]);
 
   useEffect(() => {
-    if (socketRef.current && conversation) {
+    if (socketRef.current && conversation && user?.id) {
       socketRef.current.emit("join-room", {
         roomId: conversation.id,
         userId: user.id,
@@ -71,7 +71,7 @@ export function useChat(conversation: Conversation | null) {
       logout();
     }
 
-    if (messageText && socketRef.current && conversation) {
+    if (messageText && socketRef.current && conversation && user) {
       socketRef.current.emit("send-message", {
         message: messageText,
         roomId: conversation.id,

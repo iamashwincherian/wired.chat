@@ -46,12 +46,6 @@ export function MessagesProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   };
 
-  // useEffect(() => {
-  //   if (activeConversation?.id) {
-  //     fetchMessages(activeConversation.id);
-  //   }
-  // }, [activeConversation?.id]);
-
   return (
     <MessagesContext.Provider
       value={{ messages, setMessages, fetchMessages, isLoading }}

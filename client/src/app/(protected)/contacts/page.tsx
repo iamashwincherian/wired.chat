@@ -7,10 +7,26 @@ import { Button } from "@/components/ui/button";
 import AddContactModal from "@/components/modals/add-contact";
 import Requests from "./requests";
 import AllContacts from "./all-contacts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ApiClient } from "@/lib/api-client";
+import { ContactType } from "./types";
 
 export default function Contacts() {
   const [search, setSearch] = useState("");
+  const [contacts, setContacts] = useState<ContactType[]>([]);
+
+  const fetchContacts = async () => {
+    const response = await ApiClient("GET", "/contacts", null, {
+      auth: true,
+    });
+    if (response.success) {
+      setContacts(response.data as ContactType[]);
+    }
+  };
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -50,9 +66,9 @@ export default function Contacts() {
           onChange={handleSearchChange}
         />
       </CardHeader>
-      <CardContent className="p-3 flex-1">
-        <Requests />
-        <AllContacts search={search} />
+      <CardContent className="p-3 flex-1 flex flex-col">
+        <Requests onAccept={fetchContacts} onReject={fetchContacts} />
+        <AllContacts contacts={contacts} search={search} />
       </CardContent>
     </div>
   );

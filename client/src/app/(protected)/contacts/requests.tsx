@@ -15,7 +15,14 @@ interface RequestType {
     avatar: string;
   };
 }
-export default function Requests() {
+
+interface RequestsProps {
+  onAccept?: () => void;
+  onReject?: () => void;
+}
+
+export default function Requests(props: RequestsProps) {
+  const { onAccept } = props;
   const [requests, setRequests] = useState<RequestType[]>([]);
 
   const fetchRequests = async () => {
@@ -43,6 +50,7 @@ export default function Requests() {
     if (response.success) {
       toast.success("Request accepted!");
       fetchRequests();
+      onAccept?.();
     }
   };
 
